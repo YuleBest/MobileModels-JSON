@@ -3,45 +3,69 @@ import requests
 from io import BytesIO
 import os
 
+# 从环境变量获取配置
+API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN")
+ACCOUNT_ID = os.getenv("CLOUDFLARE_ACCOUNT_ID")
+DATABASE_ID = os.getenv("CLOUDFLARE_DATABASE_ID") # 记得在 Secrets 里加上这个
+
+def upload_to_d1(sql_statements):
+    url = f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/d1/database/{DATABASE_ID}/query"
+    headers = {
+        "Authorization": f"Bearer {API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    
+    # 分批上传，每组 500 条
+    batch_size = 500
+    for i in range(0, len(sql_statements), batch_size):
+        batch = sql_statements[i : i + batch_size]
+        combined_sql = "\n".join(batch)
+        
+        print(f"正在上传第 {i} 到 {i + len(batch)} 行...")
+        try:
+            response = requests.post(url, headers=headers, json={"sql": combined_sql})
+            result = response.json()
+            if not result.get("success"):
+                print(f"❌ 上传失败！错误信息: {result.get('errors')}")
+                # 打印出具体的 SQL 语句方便排查，但只打印前 100 个字符
+                print(f"出错 SQL 片段: {combined_sql[:100]}...")
+                exit(1)
+        except Exception as e:
+            print(f"❌ 网络请求异常: {e}")
+            exit(1)
+    
+    print("✨ 数据同步大功告成！")
+
 def main():
     csv_url = "https://raw.githubusercontent.com/KHwang9883/MobileModels-csv/refs/heads/main/models.csv"
-    sql_file = "update.sql"
     
-    print(f"正在从 {csv_url} 获取数据...")
-    try:
-        res = requests.get(csv_url, timeout=30)
-        res.raise_for_status()
+    print("正在拉取 CSV...")
+    res = requests.get(csv_url)
+    df = pd.read_csv(BytesIO(res.content))
+
+    sql_commands = []
+    # 1. 重建表结构 (保持和你之前的 D1 表结构一致)
+    sql_commands.append("DROP TABLE IF EXISTS phone_models;")
+    sql_commands.append("CREATE TABLE phone_models (model TEXT, dtype TEXT, brand TEXT, brand_title TEXT, code TEXT, code_alias TEXT, model_name TEXT, ver_name TEXT);")
+    
+    # 2. 生成插入语句
+    for _, row in df.iterrows():
+        clean_values = []
+        for v in row:
+            if pd.isnull(v):
+                clean_values.append("NULL")
+            else:
+                # 重点：这里用最稳妥的办法转义单引号
+                safe_val = str(v).replace("'", "''")
+                clean_values.append(f"'{safe_val}'")
         
-        # 读取 CSV
-        df = pd.read_csv(BytesIO(res.content))
-        
-        with open(sql_file, "w", encoding="utf-8") as f:
-            # 基础设置：清空旧表并重新创建
-            f.write("-- 自动生成的 SQL，请勿手动修改\n")
-            f.write("DROP TABLE IF EXISTS phone_models;\n")
-            f.write("CREATE TABLE phone_models (model TEXT, dtype TEXT, brand TEXT, brand_title TEXT, code TEXT, code_alias TEXT, model_name TEXT, ver_name TEXT);\n")
-            
-            # 使用事务加速插入
-            f.write("BEGIN TRANSACTION;\n")
-            
-            for _, row in df.iterrows():
-                # 处理 SQL 转义：将单引号 ' 替换为 ''，并处理空值
-                items = []
-                for val in row:
-                    if pd.isnull(val):
-                        items.append("NULL")
-                    else:
-                        safe_val = str(val).replace("'", "''")
-                        items.append(f"'{safe_val}'")
-                
-                f.write(f"INSERT INTO phone_models VALUES ({', '.join(items)});\n")
-                
-            f.write("COMMIT;\n")
-            
-        print(f"成功生成 {sql_file}，共 {len(df)} 行数据。")
-        
-    except Exception as e:
-        print(f"出错啦: {e}")
+        sql_commands.append(f"INSERT INTO phone_models VALUES ({', '.join(clean_values)});")
+    
+    # 3. 开始上传
+    if API_TOKEN and ACCOUNT_ID and DATABASE_ID:
+        upload_to_d1(sql_commands)
+    else:
+        print("❌ 缺少环境变量：API_TOKEN, ACCOUNT_ID 或 DATABASE_ID")
         exit(1)
 
 if __name__ == "__main__":
