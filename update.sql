@@ -1,7 +1,5 @@
--- 自动生成的 SQL，请勿手动修改
 DROP TABLE IF EXISTS phone_models;
 CREATE TABLE phone_models (model TEXT, dtype TEXT, brand TEXT, brand_title TEXT, code TEXT, code_alias TEXT, model_name TEXT, ver_name TEXT);
-BEGIN TRANSACTION;
 INSERT INTO phone_models VALUES ('1503-M02', 'mob', '360', '360', NULL, NULL, '手机 N4', '移动版');
 INSERT INTO phone_models VALUES ('1503-A01', 'mob', '360', '360', NULL, NULL, '手机 N4', '全网通版');
 INSERT INTO phone_models VALUES ('1505-A01', 'mob', '360', '360', NULL, NULL, '手机 N4s', NULL);
@@ -1583,6 +1581,9 @@ INSERT INTO phone_models VALUES ('G45RY', 'mob', 'google', 'Google', NULL, 'must
 INSERT INTO phone_models VALUES ('GYPW4', 'mob', 'google', 'Google', NULL, 'mustang', 'Pixel 10 Pro XL', 'Japan');
 INSERT INTO phone_models VALUES ('GU0NP', 'mob', 'google', 'Google', NULL, 'rango', 'Pixel 10 Pro Fold', 'Global');
 INSERT INTO phone_models VALUES ('GM66V', 'mob', 'google', 'Google', NULL, 'rango', 'Pixel 10 Pro Fold', 'Japan');
+INSERT INTO phone_models VALUES ('GE1GQ', 'mob', 'google', 'Google', NULL, 'stallion', 'Pixel 10a', 'US');
+INSERT INTO phone_models VALUES ('G4H7L', 'mob', 'google', 'Google', NULL, 'stallion', 'Pixel 10a', 'Global');
+INSERT INTO phone_models VALUES ('GV0BP', 'mob', 'google', 'Google', NULL, 'stallion', 'Pixel 10a', 'Japan');
 INSERT INTO phone_models VALUES ('C1502W', 'mob', 'google', 'Google', NULL, 'dragon', 'Pixel C', NULL);
 INSERT INTO phone_models VALUES ('GTU8P', 'pad', 'google', 'Google', NULL, 'tangorpro', 'Pixel Tablet', NULL);
 INSERT INTO phone_models VALUES ('GQF4C', 'watch', 'google', 'Google', NULL, 'r11btwifi', 'Pixel Watch', 'Bluetooth & Wi-Fi');
@@ -11414,4 +11415,3 @@ INSERT INTO phone_models VALUES ('Z9101', 'mob', 'zte', '中兴', NULL, NULL, '�
 INSERT INTO phone_models VALUES ('ZTE 9041N', 'mob', 'zte', '中兴', NULL, NULL, '中兴 V70', NULL);
 INSERT INTO phone_models VALUES ('ZTE 9043N', 'mob', 'zte', '中兴', NULL, NULL, '中兴 V70 Pro', NULL);
 INSERT INTO phone_models VALUES ('ZTE PA01', 'pad', 'zte', '中兴', NULL, NULL, '中兴 Axon Pad', NULL);
-COMMIT;
