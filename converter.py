@@ -37,7 +37,7 @@ def upload_to_d1(sql_statements):
     print("✨ 数据同步大功告成！")
 
 def main():
-    csv_url = "https://raw.githubusercontent.com/KHwang9883/MobileModels-csv/refs/heads/main/models.csv"
+    csv_url = "https://raw.githubusercontent.com/YuleBest/MobileModels-csv/refs/heads/main/models.csv"
     
     print("正在拉取 CSV...")
     res = requests.get(csv_url)
