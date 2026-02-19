@@ -16,6 +16,7 @@ R2_ENDPOINT = os.getenv("R2_ENDPOINT_URL")
 CSV_URL = "https://raw.githubusercontent.com/YuleBest/MobileModels-csv/refs/heads/main/models.csv"
 MD5_FILE = "last_csv_md5.txt"
 JSON_FILENAME = "models.json"
+UPDATE_TIME_FILE = "update_time.txt"
 
 def get_file_md5(content):
     return hashlib.md5(content).hexdigest()
@@ -68,7 +69,6 @@ def main():
     df = pd.read_csv(BytesIO(new_content))
     
     # 清洗：将空值转为 null，确保 JSON 格式正确
-    # to_dict('records') 直接生成前端最喜欢的 [{...}, {...}] 格式
     json_list = df.where(pd.notnull(df), None).to_dict(orient='records')
     
     # 转换为 JSON 字符串，去掉空格压缩体积
@@ -81,8 +81,14 @@ def main():
         with open(MD5_FILE, "w") as f:
             f.write(new_md5)
         
+        # 获取当前时间（北京时间）
         tz = timezone(timedelta(hours=8))
         current_time = datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S")
+
+        # 将时间写入本地文件
+        with open(UPDATE_TIME_FILE, "w", encoding="utf-8") as f:
+            f.write(current_time)
+        
         print(f"✨ 同步完成！更新时间: {current_time}")
     else:
         print("❌ 缺少 R2 环境变量。")
