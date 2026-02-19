@@ -1,8 +1,33 @@
 DROP TABLE IF EXISTS phone_models;
 DROP TABLE IF EXISTS phone_models_fts;
-CREATE TABLE phone_models (model TEXT, dtype TEXT, brand TEXT, brand_title TEXT, code TEXT, code_alias TEXT, model_name TEXT, ver_name TEXT);
+
+    CREATE TABLE phone_models (
+        model TEXT, 
+        dtype TEXT, 
+        brand TEXT, 
+        brand_title TEXT, 
+        code TEXT, 
+        code_alias TEXT, 
+        model_name TEXT, 
+        ver_name TEXT
+    );
 CREATE INDEX idx_brand ON phone_models(brand);
-CREATE VIRTUAL TABLE phone_models_fts USING fts5(model, code, code_alias, model_name, brand, content='phone_models');
+CREATE INDEX idx_dtype ON phone_models(dtype);
+
+    CREATE VIRTUAL TABLE phone_models_fts USING fts5(
+        model, 
+        code, 
+        code_alias, 
+        model_name, 
+        brand, 
+        content='phone_models', 
+        content_rowid='rowid'
+    );
+
+    CREATE TRIGGER phone_models_ai AFTER INSERT ON phone_models BEGIN
+      INSERT INTO phone_models_fts(rowid, model, code, code_alias, model_name, brand)
+      VALUES (new.rowid, new.model, new.code, new.code_alias, new.model_name, new.brand);
+    END;
 INSERT INTO phone_models VALUES ('1503-M02', 'mob', '360', '360', NULL, NULL, '手机 N4', '移动版');
 INSERT INTO phone_models VALUES ('1503-A01', 'mob', '360', '360', NULL, NULL, '手机 N4', '全网通版');
 INSERT INTO phone_models VALUES ('1505-A01', 'mob', '360', '360', NULL, NULL, '手机 N4s', NULL);
@@ -11418,4 +11443,3 @@ INSERT INTO phone_models VALUES ('Z9101', 'mob', 'zte', '中兴', NULL, NULL, '�
 INSERT INTO phone_models VALUES ('ZTE 9041N', 'mob', 'zte', '中兴', NULL, NULL, '中兴 V70', NULL);
 INSERT INTO phone_models VALUES ('ZTE 9043N', 'mob', 'zte', '中兴', NULL, NULL, '中兴 V70 Pro', NULL);
 INSERT INTO phone_models VALUES ('ZTE PA01', 'pad', 'zte', '中兴', NULL, NULL, '中兴 Axon Pad', NULL);
-INSERT INTO phone_models_fts(rowid, model, code, code_alias, model_name, brand) SELECT rowid, model, code, code_alias, model_name, brand FROM phone_models;
