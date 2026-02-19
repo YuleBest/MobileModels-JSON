@@ -88,7 +88,6 @@ def main():
             if pd.isnull(v):
                 clean_values.append("NULL")
             else:
-                # 转义单引号防 SQL 注入
                 safe_val = str(v).replace("'", "''")
                 clean_values.append(f"'{safe_val}'")
         sql_commands.append(f"INSERT INTO phone_models VALUES ({', '.join(clean_values)});")
